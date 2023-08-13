@@ -15,61 +15,20 @@ public class Main {
     public static int nbEchec = 0;
     public static int nbCopy = 0;
 
-    public static Picross fichierToPicross(String nameFile){
-        Integer colonnes = 0;
-        Integer lignes = 0;
-        List<List<Integer>> valeursColonnes = new ArrayList<>();
-        List<List<Integer>> valeursLignes = new ArrayList<>();
-        try{
-            // Le fichier d'entrée
-            File file = new File("src/resources/"+nameFile);
-            FileReader fr = new FileReader(file);
-            BufferedReader br = new BufferedReader(fr);
+    public static String SEP = File.separator;
+    public static String DOSSIER_RESOURCES = "src" + SEP + "main" + SEP +  "resources";
 
-            String line;
-            //Taille matrice
-            line = br.readLine();
-            colonnes = Integer.parseInt(line.split("x")[0]);
-            lignes = Integer.parseInt(line.split("x")[1]);
 
-            //Colonnes:
-            br.readLine();
-
-            for(int i = 0; i<colonnes; i++){
-                line = br.readLine();
-                String[] split = line.split("-");
-                List<Integer> valeursColonne = new ArrayList<>();
-                for (String s : split) {
-                    valeursColonne.add(Integer.parseInt(s));
-                }
-                valeursColonnes.add(valeursColonne);
-            }
-
-            //Lignes:
-            br.readLine();
-
-            for(int i = 0; i<lignes; i++){
-                line = br.readLine();
-                String[] split = line.split("-");
-                List<Integer> valeursLigne = new ArrayList<>();
-                for (String s : split) {
-                    valeursLigne.add(Integer.parseInt(s));
-                }
-                valeursLignes.add(valeursLigne);
-            }
-            fr.close();
-        }
-        catch(IOException e){
-            e.printStackTrace();
-        }
-        return new Picross(colonnes,lignes,valeursColonnes,valeursLignes);
+    public static void main(String[] args) throws Exception {
+        runPicross("Picross1.txt");
+//        runTestMegaPicross();
     }
 
-    public static void runAllPicross() throws Exception {
+    public static void runPicross(String filename) throws Exception {
         //Lire fichier
-
-        //creer la matrice
-        Picross picross = fichierToPicross("Picross3.txt");
+        //todo jordan
+        //Créer la matrice
+        Picross picross = fichierToPicross(filename);
         System.out.println("test "+picross.valeursColonnes);
         System.out.println("test "+picross.valeursLignes);
 
@@ -97,20 +56,65 @@ public class Main {
         }
     }
 
-    public static Boolean[][] copy(Boolean[][] src) {
-        if (src == null) {
-            return null;
-        }
 
-        Boolean[][] copy = new Boolean[src.length][];
-        for (int i = 0; i < src.length; i++) {
-            copy[i] = src[i].clone();
+
+    public static Picross fichierToPicross(String filename){
+        Integer nbColonnes = 0;
+        Integer nbLignes = 0;
+        List<List<Integer>> valeursColonnes = new ArrayList<>();
+        List<List<Integer>> valeursLignes = new ArrayList<>();
+        try{
+            // Le fichier d'entrée
+            File file = new File(DOSSIER_RESOURCES + SEP + filename);
+            FileReader fr = new FileReader(file);
+            BufferedReader br = new BufferedReader(fr);
+
+            String line;
+            //Taille matrice
+            line = br.readLine();
+            nbColonnes = Integer.parseInt(line.split("x")[0]);
+            nbLignes = Integer.parseInt(line.split("x")[1]);
+
+            //Colonnes:
+            while(valeursColonnes.size() < nbColonnes){
+                line = br.readLine();
+                if(line.startsWith("#")){
+                    continue;
+                }
+                String[] split = line.split("-");
+                List<Integer> valeursColonne = new ArrayList<>();
+                for (String s : split) {
+                    if(Integer.parseInt(s) > 0) {
+                        valeursColonne.add(Integer.parseInt(s));
+                    }
+                }
+                valeursColonnes.add(valeursColonne);
+            }
+
+            //Lignes:
+            while(valeursLignes.size() < nbLignes){
+                line = br.readLine();
+                if(line.startsWith("#")){
+                    continue;
+                }
+                String[] split = line.split("-");
+                List<Integer> valeursLigne = new ArrayList<>();
+                for (String s : split) {
+                    if(Integer.parseInt(s) > 0) {
+                        valeursLigne.add(Integer.parseInt(s));
+                    }
+                }
+                valeursLignes.add(valeursLigne);
+            }
+            fr.close();
         }
-        nbCopy++;
-        return copy;
+        catch(IOException e){
+            e.printStackTrace();
+        }
+        return new Picross(nbColonnes,nbLignes,valeursColonnes,valeursLignes);
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void runTestMegaPicross() throws Exception {
         Boolean[][] matrice;
         int tailleColonne = 6;
         List<Boolean[][]> resultats = new ArrayList<>();
@@ -169,6 +173,7 @@ public class Main {
         System.out.println("nbEchec " + nbEchec);
         System.out.println("nbCopy " + nbCopy);
         System.out.println("resultat " + resultats.size());
+
     }
 
     //A peu pres
@@ -216,10 +221,23 @@ public class Main {
         return taille;
     }
 
+    public static Boolean[][] copyMatrice(Boolean[][] src) {
+        if (src == null) {
+            return null;
+        }
+
+        Boolean[][] copy = new Boolean[src.length][];
+        for (int i = 0; i < src.length; i++) {
+            copy[i] = src[i].clone();
+        }
+        nbCopy++;
+        return copy;
+    }
+
     public static List<Boolean[][]> dupliquer(List<Boolean[][]> list){
         List<Boolean[][]> dupliquer = new ArrayList<>();
         for(Boolean[][] booleans : list){
-            dupliquer.add(copy(booleans));
+            dupliquer.add(copyMatrice(booleans));
         }
 
         return dupliquer;
@@ -227,7 +245,7 @@ public class Main {
 
     public static void transferer(List<Boolean[][]> list, List<Boolean[][]> resultat){
         for(Boolean[][] booleans : list){
-            resultat.add(copy(booleans));
+            resultat.add(copyMatrice(booleans));
         }
     }
 
@@ -285,8 +303,8 @@ public class Main {
             } else {
                 if (param.ligne < mat.length && param.colonne < mat[param.ligne].length && mat[param.ligne][param.colonne] == null) {
                     if (param.compteur < megaValeur.getValeur() && resteDeLaPlace(megaValeur,param,mat)) {
-                        caseTrue(megaValeur, param, copy(mat), resultats);
-                        caseFalse(megaValeur, param, copy(mat), resultats);
+                        caseTrue(megaValeur, param, copyMatrice(mat), resultats);
+                        caseFalse(megaValeur, param, copyMatrice(mat), resultats);
                     }else{
                         enEchec(megaValeur, param, mat, resultats);
                     }
@@ -319,7 +337,7 @@ public class Main {
     public static void enEchec(MegaValeur megaValeur, ParametresMega param, Boolean[][] mat, List<Boolean[][]> resultats) throws Exception {
         ParametresMega newParam = param.cloner();
         newParam.statut = ParametresMega.Statut.ECHEC;
-        getCombi(megaValeur, newParam, copy(mat), resultats);
+        getCombi(megaValeur, newParam, copyMatrice(mat), resultats);
     }
 
     public static void cloreValeur(Boolean[][] mat, int ligne, int colonne, MegaValeur.Position position) throws Exception {
@@ -370,7 +388,7 @@ public class Main {
         }
 
         newParam.compteur = param.compteur +1;
-        getCombi(megaValeur, newParam, copy(mat), resultats);
+        getCombi(megaValeur, newParam, copyMatrice(mat), resultats);
     }
 
     public static void caseFalse(MegaValeur megaValeur, ParametresMega param, Boolean[][] mat, List<Boolean[][]> resultats) throws Exception {
@@ -401,7 +419,7 @@ public class Main {
         }else{
             newParam.colonne = param.colonne + 1;
         }
-        getCombi(megaValeur, newParam, copy(mat), resultats);
+        getCombi(megaValeur, newParam, copyMatrice(mat), resultats);
     }
 
     public static int inverserLigne(int ligne) throws Exception {

@@ -17,14 +17,22 @@ public class Picross {
         this.valeursColonnes = valeursColonnes;
         this.valeursLignes = valeursLignes;
         matrice = new Boolean[nbLigne][nbCol];
-        System.out.println("size "+nbLigne + " " + nbCol);
-        System.out.println("size matrice "+matrice.length);
-        System.out.println("size matrice[0] "+matrice[0].length);
+        System.out.println("size Lignes:"+nbLigne + " - Colonnes:" + nbCol);
+        System.out.println("size matrice "+matriceNbLignes());
+        System.out.println("size matrice[0] "+matriceNbColonnes());
+    }
+
+    public int matriceNbLignes(){
+        return matrice.length;
+    }
+
+    public int matriceNbColonnes(){
+        return matrice[0].length;
     }
 
     public Boolean[] getLigne(int ligne){
-        Boolean[] ligneArray = new Boolean[matrice[0].length];
-        for(int i = 0; i < matrice[0].length; i++) {
+        Boolean[] ligneArray = new Boolean[matriceNbColonnes()];
+        for(int i = 0; i < matriceNbColonnes(); i++) {
             ligneArray[i] = matrice[ligne][i];
         }
         System.out.println("Ligne "+ ligne + ": "+Arrays.toString(ligneArray));
@@ -32,8 +40,8 @@ public class Picross {
     }
 
     public Boolean[] getColonne(int colonne){
-        Boolean[] colArray = new Boolean[matrice.length];
-        for(int i = 0; i < matrice.length; i++) {
+        Boolean[] colArray = new Boolean[matriceNbLignes()];
+        for(int i = 0; i < matriceNbLignes(); i++) {
             colArray[i] = matrice[i][colonne];
         }
         System.out.println("colonne "+ colonne + ": "+Arrays.toString(colArray));
@@ -188,14 +196,13 @@ public class Picross {
     public List<String> forPrintMatrice(){
         List<String> toPrint = new ArrayList<>();
         StringBuilder ligne = new StringBuilder();
-//        ligne.append("_".repeat(Math.max(0, matrice.length + 2)));
-        ligne.append(String.join("", Collections.nCopies(Math.max(0, matrice.length + 2), "_")));
+        ligne.append(String.join("", Collections.nCopies(Math.max(0, matriceNbLignes() + 2), "_")));
         toPrint.add(ligne.toString());
 
         for (Boolean[] booleans : matrice) {
             ligne = new StringBuilder();
             ligne.append("|");
-            for (int c = 0; c < matrice[0].length; c++) {
+            for (int c = 0; c < matriceNbColonnes(); c++) {
                 if (booleans[c] == null) {
                     ligne.append(ATTENTE);
                 } else if (booleans[c]) {
@@ -209,8 +216,7 @@ public class Picross {
         }
 
         ligne = new StringBuilder();
-//        ligne.append("_".repeat(Math.max(0, matrice.length + 2)));
-        ligne.append(String.join("", Collections.nCopies(Math.max(0, matrice.length + 2), "_")));
+        ligne.append(String.join("", Collections.nCopies(Math.max(0, matriceNbLignes() + 2), "_")));
         toPrint.add(ligne.toString());
 
         return toPrint;
@@ -259,7 +265,7 @@ public class Picross {
     }
 
     private void verification() throws Exception {
-        for(int l=0; l<matrice.length; l++){
+        for(int l=0; l<matriceNbLignes(); l++){
             List<Integer> list = valeursLignes.get(l);
             int compteur = 0;
             int nbValeur = 0;
@@ -269,7 +275,7 @@ public class Picross {
                 }else if(b){
                     compteur++;
                 }else{
-                    if(compteur!=0){
+                    if(compteur != 0){
                         if(compteur != list.get(nbValeur)){
                             throw new Exception("La ligne " + l +" n'est pas bonne.");
                         }
@@ -278,18 +284,19 @@ public class Picross {
                     }
                 }
             }
-            if(compteur!=0){
+            if(compteur != 0){
                 if(compteur != list.get(nbValeur)){
                     throw new Exception("La ligne " + l +" n'est pas bonne.");
                 }
                 nbValeur++;
             }
             if(nbValeur != list.size()){
+                System.out.println("nbValeur "+nbValeur +" - "+list.size());//todo jordan
                 throw new Exception("La ligne " + l +" n'est pas bonne.");
             }
         }
 
-        for(int c=0; c<matrice.length; c++){
+        for(int c=0; c<matriceNbColonnes(); c++){
             List<Integer> list = valeursColonnes.get(c);
             int compteur = 0;
             int nbValeur = 0;
