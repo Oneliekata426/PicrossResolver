@@ -25,7 +25,7 @@ public class Main {
 //        picross.ordreRemplissage.add(new Point(1,1));
 //        System.out.println("ordreRemplissage "+picross.ordreRemplissage.contains(new Point(1,1)));
 
-        runPicross("Picross4.txt");
+        runPicross("Picross1.txt");
 //        runTestMegaPicross();
     }
 
@@ -55,7 +55,7 @@ public class Main {
             System.out.println(ligne);
         }
         // Ordre de remplissage
-        System.out.println("Ordre: "+picross.ordreRemplissage);
+        System.out.println("Ordre: "+picross.ordreRemplissage.size() + " - " +picross.ordreRemplissage);
 
         // Statistiques
         System.out.println("Statistiques: "+picross.statistiques);

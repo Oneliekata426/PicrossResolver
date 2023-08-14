@@ -1,7 +1,5 @@
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
 
 
@@ -10,8 +8,9 @@ public class SimplePicross {
     public List<List<Integer>> valeursColonnes;
     public List<List<Integer>> valeursLignes;
     private Boolean[][] matrice;
+    private Boolean[][] changements;
     public List<Point> ordreRemplissage = new ArrayList<>();
-    public List<Statistique> statistiques = new ArrayList<>();
+    public Map<Integer,Statistique> statistiques = new HashMap();
     public boolean statActif;
 
     public static final String OUI = "o";
@@ -22,6 +21,7 @@ public class SimplePicross {
         this.valeursColonnes = valeursColonnes;
         this.valeursLignes = valeursLignes;
         matrice = new Boolean[nbLigne][nbCol];
+        changements = new Boolean[nbLigne][nbCol];
         this.statActif = statActif;
         System.out.println(String.format("SimplePicross - ligne(%d/%d); colonne(%d/%d)",nbLigne,matriceNbLignes(),nbCol,matriceNbColonnes()));
     }
@@ -47,11 +47,12 @@ public class SimplePicross {
                 //Lecture normal ou inversé (de bas en haut/droite à gauche)
                 int position = (ligneEnPremiere && !parcours.lectureLigneInverse)
                         || (!ligneEnPremiere && !parcours.lectureColonneInverse) ? start : (end-1-start);
-                if(ligneEnPremiere) {
-                    changement = construirePossibiliteLigne(position,nbBoucle) || changement;
-                }else{
-                    changement = construirePossibiliteColonne(position,nbBoucle) || changement;
-                }
+//                if(ligneEnPremiere) {
+//                    changement = construirePossibiliteLigne(position,nbBoucle) || changement;
+//                }else{
+//                    changement = construirePossibiliteColonne(position,nbBoucle) || changement;
+//                }
+                changement = construirePossibilite(position,nbBoucle,ligneEnPremiere) || changement;
                 if(parcours.reset && changement){
                     System.out.println("trouverSolution-----------------RESET ");// TODO: 13/08/2023
                     break;
@@ -65,17 +66,19 @@ public class SimplePicross {
                     //Lecture normal ou inversé (de bas en haut/droite à gauche)
                     int position = (colonneEnDerniere && !parcours.lectureColonneInverse)
                             || (!colonneEnDerniere && !parcours.lectureLigneInverse) ? start : (end-1-start);
-                    if(colonneEnDerniere) {
-                        changement = construirePossibiliteColonne(position,nbBoucle) || changement;
-                    }else{
-                        changement = construirePossibiliteLigne(position,nbBoucle) || changement;
-                    }
+//                    if(colonneEnDerniere) {
+//                        changement = construirePossibiliteColonne(position,nbBoucle) || changement;
+//                    }else{
+//                        changement = construirePossibiliteLigne(position,nbBoucle) || changement;
+//                    }
+                    changement = construirePossibilite(position,nbBoucle,!ligneEnPremiere) || changement;
                     if(parcours.reset && changement){
                         System.out.println("trouverSolution-----------------RESET2 ");// TODO: 13/08/2023
                         break;
                     }
                 }
             }
+            appliquerChangement();
         }
 
         System.out.println("Nombre de boucles parcourus: " + nbBoucle);
@@ -100,25 +103,71 @@ public class SimplePicross {
         return colArray;
     }
 
-    public boolean construirePossibiliteColonne(int colonne, int nbBoucle){
-        final Boolean[] base = getColonne(colonne);
+//    public boolean construirePossibiliteColonne(int colonne, int nbBoucle){
+//        final Boolean[] base = getColonne(colonne);
+//        if(estRempli(base)){
+//            return false;
+//        }
+////        Boolean[] resultatFinal = new Boolean[base.length];//todo
+//        List<Integer> valeursColonne = valeursColonnes.get(colonne);
+//        System.out.println("valeursColonne "+valeursColonne);
+//        //recup matrice de toutes les solutions
+//        Boolean[][] possibilites = getPossibilite(valeursColonne, base.length);
+//
+//        //faire le tri en fonction de si c'est ok avec base
+//        Boolean[][] trie = triEnFonctionDeBase(base, possibilites);
+//        //recuperer dans resultatFinal les endroits ou tout le monde est daccord
+//        Boolean[] masquage = masquage(trie, base);
+//        //remplir matrice
+//        boolean aRempli = remplir(colonne, masquage,false);
+//        if(aRempli){
+//            ajouterStatistique(nbBoucle,colonne, masquage,false);
+//        }
+//        return aRempli;
+//    }
+
+//    public boolean construirePossibiliteLigne(int ligne, int nbBoucle){
+//        final Boolean[] base = getLigne(ligne);
+//        if(estRempli(base)){
+//            return false;
+//        }
+////        Boolean[] resultatFinal = new Boolean[base.length];todo
+//        List<Integer> valeursLigne = valeursLignes.get(ligne);
+//        System.out.println("valeursLignes "+valeursLignes);
+//        //recup matrice de toutes les solutions
+//        Boolean[][] possibilites = getPossibilite(valeursLigne, base.length);
+//
+//        //faire le tri en fonction de si c'est ok avec base
+//        Boolean[][] trie = triEnFonctionDeBase(base, possibilites);
+//        //recuperer dans resultatFinal les endroits ou tout le monde est daccord
+//        Boolean[] masquage = masquage(trie, base);
+//        //remplir matrice
+//        boolean aRempli = remplir(ligne, masquage,true);
+//        if(aRempli){
+//            ajouterStatistique(nbBoucle,ligne, masquage,true);
+//        }
+//        return aRempli;
+//    }
+
+    public boolean construirePossibilite(int indice, int nbBoucle, boolean pourLigne){
+        final Boolean[] base = pourLigne? getLigne(indice) : getColonne(indice);
         if(estRempli(base)){
             return false;
         }
 //        Boolean[] resultatFinal = new Boolean[base.length];//todo
-        List<Integer> valeursColonne = valeursColonnes.get(colonne);
-        System.out.println("valeursColonne "+valeursColonne);
+        List<Integer> valeurs = pourLigne? valeursLignes.get(indice) : valeursColonnes.get(indice);
+        System.out.println("valeurs" + (pourLigne ? "Lignes " : "Colonnes ") +valeurs);
         //recup matrice de toutes les solutions
-        Boolean[][] possibilites = getPossibilite(valeursColonne, base.length);
+        Boolean[][] possibilites = getPossibilite(valeurs, base.length);
 
         //faire le tri en fonction de si c'est ok avec base
         Boolean[][] trie = triEnFonctionDeBase(base, possibilites);
         //recuperer dans resultatFinal les endroits ou tout le monde est daccord
         Boolean[] masquage = masquage(trie, base);
         //remplir matrice
-        boolean aRempli = remplir(colonne, masquage,false);
+        boolean aRempli = remplir(indice, masquage,pourLigne);
         if(aRempli){
-            ajouterStatistique(nbBoucle,colonne, masquage,false);
+            ajouterStatistique(nbBoucle,indice, masquage,pourLigne);
         }
         return aRempli;
     }
@@ -128,9 +177,9 @@ public class SimplePicross {
         for(int i=0; i<masquage.length; i++){
             if(masquage[i] != null){
                 if(pourLigne){
-                    remplirMatrice(new Point(indice, i), masquage[i]);
+                    remplirMatriceChangement(new Point(indice, i), masquage[i]);
                 }else {
-                    remplirMatrice(new Point(i, indice), masquage[i]);
+                    remplirMatriceChangement(new Point(i, indice), masquage[i]);
                 }
                 aRempli = true;
             }
@@ -138,32 +187,10 @@ public class SimplePicross {
         return aRempli;
     }
 
-    public void remplirMatrice(Point position, boolean valeur){
-        matrice[position.x][position.y] = valeur;
+    public void remplirMatriceChangement(Point position, boolean valeur){
+//        matrice[position.x][position.y] = valeur;//todo
+        changements[position.x][position.y] = valeur;//todo
         ajouterOrdreRemplissage(position);
-    }
-
-    public boolean construirePossibiliteLigne(int ligne, int nbBoucle){
-        final Boolean[] base = getLigne(ligne);
-        if(estRempli(base)){
-            return false;
-        }
-//        Boolean[] resultatFinal = new Boolean[base.length];todo
-        List<Integer> valeursLigne = valeursLignes.get(ligne);
-        System.out.println("valeursLignes "+valeursLignes);
-        //recup matrice de toutes les solutions
-        Boolean[][] possibilites = getPossibilite(valeursLigne, base.length);
-
-        //faire le tri en fonction de si c'est ok avec base
-        Boolean[][] trie = triEnFonctionDeBase(base, possibilites);
-        //recuperer dans resultatFinal les endroits ou tout le monde est daccord
-        Boolean[] masquage = masquage(trie, base);
-        //remplir matrice
-        boolean aRempli = remplir(ligne, masquage,true);
-        if(aRempli){
-            ajouterStatistique(nbBoucle,ligne, masquage,true);
-        }
-        return aRempli;
     }
 
     public Boolean[][] getPossibilite(List<Integer> valeursColonne, int taille){
@@ -251,8 +278,14 @@ public class SimplePicross {
     }
 
     public void ajouterStatistique(int nbBoucle, int indice, Boolean[] masquage,boolean pourLigne){
+        //todo check
         if(statActif) {
-            Statistique stat = new Statistique(nbBoucle);
+            Statistique stat = statistiques.get(nbBoucle);
+            if(stat == null) {
+                stat = new Statistique(nbBoucle);
+                stat.valeurRestante = caseRestantes();
+                statistiques.put(nbBoucle,stat);
+            }
             List<Point> points = new ArrayList<>();
             for (int i = 0; i < masquage.length; i++) {
                 if (masquage[i] != null) {
@@ -265,8 +298,6 @@ public class SimplePicross {
             }
             if (points.size() > 0) {
                 stat.positionPossible.add(points);
-                stat.valeurRestante = 0;//todo
-                statistiques.add(stat);
             }
         }
     }
@@ -414,4 +445,29 @@ public class SimplePicross {
         }
     }
 
+    public int caseRestantes(){
+        int compteur = 0;
+        for(Boolean[] ligne : matrice){
+            for(Boolean b : ligne) {
+                if (b == null) {
+                    compteur++;
+                }
+            }
+        }
+        return compteur;
+    }
+
+    public void appliquerChangement(){
+        //Update Matrice
+        for(int l= 0; l< changements.length; l++){
+            for(int c = 0; c < changements[l].length; c++) {
+                if (changements[l][c] != null) {
+                    matrice[l][c] = changements[l][c];
+                }
+            }
+        }
+
+        //Reset changement
+        changements = new Boolean[matriceNbLignes()][matriceNbColonnes()];
+    }
 }
