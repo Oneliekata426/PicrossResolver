@@ -1,3 +1,4 @@
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -20,7 +21,11 @@ public class Main {
 
 
     public static void main(String[] args) throws Exception {
-        runPicross("Picross1.txt");
+//        SimplePicross picross = new SimplePicross(1,1,null,null);
+//        picross.ordreRemplissage.add(new Point(1,1));
+//        System.out.println("ordreRemplissage "+picross.ordreRemplissage.contains(new Point(1,1)));
+
+        runPicross("Picross4.txt");
 //        runTestMegaPicross();
     }
 
@@ -28,25 +33,20 @@ public class Main {
         //Lire fichier
         //todo jordan
         //Créer la matrice
-        Picross picross = fichierToPicross(filename);
-        System.out.println("test "+picross.valeursColonnes);
-        System.out.println("test "+picross.valeursLignes);
+        SimplePicross picross = fichierToPicross(filename);
+        System.out.println("runPicross valeursColonnes: "+picross.valeursColonnes);
+        System.out.println("runPicross valeursLignes: "+picross.valeursLignes);
 
-        boolean changement = true;
-        long startTime = System.currentTimeMillis();
-        while(changement) {
-            changement = false;
-            for (int c = 0; c < picross.matrice[0].length; c++) {
-                changement = changement || picross.construirePossibiliteColonne(c);
-            }
-            for (int l = 0; l < picross.matrice.length; l++) {
-                changement = changement || picross.construirePossibiliteLigne(l);
-            }
-        }
+
+
+
 
         //afficher resultat
         System.out.println();
-        if(picross.estRempli()) {
+        long startTime = System.currentTimeMillis();
+        Parcours parcoursNormal = new Parcours(false);
+//        Parcours parcoursNormal = new Parcours(Parcours.Ordre.COLONNE, true, true, true);
+        if(picross.trouverSolution(parcoursNormal)) {
             System.out.println("Solution Trouvée en " + (System.currentTimeMillis() - startTime) + "ms");
         }else{
             System.out.println("Solution Impossible (" + (System.currentTimeMillis() - startTime) + "ms)");
@@ -54,11 +54,16 @@ public class Main {
         for(String ligne : picross.forPrintMatrice()){
             System.out.println(ligne);
         }
+        // Ordre de remplissage
+        System.out.println("Ordre: "+picross.ordreRemplissage);
+
+        // Statistiques
+        System.out.println("Statistiques: "+picross.statistiques);
     }
 
 
 
-    public static Picross fichierToPicross(String filename){
+    public static SimplePicross fichierToPicross(String filename){
         Integer nbColonnes = 0;
         Integer nbLignes = 0;
         List<List<Integer>> valeursColonnes = new ArrayList<>();
@@ -111,7 +116,7 @@ public class Main {
         catch(IOException e){
             e.printStackTrace();
         }
-        return new Picross(nbColonnes,nbLignes,valeursColonnes,valeursLignes);
+        return new SimplePicross(nbColonnes,nbLignes,valeursColonnes,valeursLignes,true);
     }
 
     public static void runTestMegaPicross() throws Exception {

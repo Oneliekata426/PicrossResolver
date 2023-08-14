@@ -10,7 +10,7 @@ public class CombinationGenerator2 {
     public static int ECHEC = 0;
     public static int OK = 1;
 
-    public static Picross fichierToPicross(String nameFile){
+    public static SimplePicross fichierToPicross(String nameFile){
         Integer colonnes = 0;
         Integer lignes = 0;
         List<List<Integer>> valeursColonnes = new ArrayList<>();
@@ -57,39 +57,39 @@ public class CombinationGenerator2 {
         catch(IOException e){
             e.printStackTrace();
         }
-        return new Picross(colonnes,lignes,valeursColonnes,valeursLignes);
+        return new SimplePicross(colonnes,lignes,valeursColonnes,valeursLignes,true);
     }
 
     public static void runAllPicross() throws Exception {
-        //Lire fichier
-
-        //creer la matrice
-        Picross picross = fichierToPicross("Picross3.txt");
-        System.out.println("test "+picross.valeursColonnes);
-        System.out.println("test "+picross.valeursLignes);
-
-        boolean changement = true;
-        long startTime = System.currentTimeMillis();
-        while(changement) {
-            changement = false;
-            for (int c = 0; c < picross.matrice[0].length; c++) {
-                changement = changement || picross.construirePossibiliteColonne(c);
-            }
-            for (int l = 0; l < picross.matrice.length; l++) {
-                changement = changement || picross.construirePossibiliteLigne(l);
-            }
-        }
-
-        //afficher resultat
-        System.out.println();
-        if(picross.estRempli()) {
-            System.out.println("Solution Trouvée en " + (System.currentTimeMillis() - startTime) + "ms");
-        }else{
-            System.out.println("Solution Impossible (" + (System.currentTimeMillis() - startTime) + "ms)");
-        }
-        for(String ligne : picross.forPrintMatrice()){
-            System.out.println(ligne);
-        }
+//        //Lire fichier
+//
+//        //creer la matrice
+//        SimplePicross picross = fichierToPicross("Picross3.txt");
+//        System.out.println("test "+picross.valeursColonnes);
+//        System.out.println("test "+picross.valeursLignes);
+//
+//        boolean changement = true;
+//        long startTime = System.currentTimeMillis();
+//        while(changement) {
+//            changement = false;
+//            for (int c = 0; c < picross.matriceNbColonnes(); c++) {
+//                changement = changement || picross.construirePossibiliteColonne(c);
+//            }
+//            for (int l = 0; l < picross.matriceNbLignes(); l++) {
+//                changement = changement || picross.construirePossibiliteLigne(l);
+//            }
+//        }
+//
+//        //afficher resultat
+//        System.out.println();
+//        if(picross.estRempli()) {
+//            System.out.println("Solution Trouvée en " + (System.currentTimeMillis() - startTime) + "ms");
+//        }else{
+//            System.out.println("Solution Impossible (" + (System.currentTimeMillis() - startTime) + "ms)");
+//        }
+//        for(String ligne : picross.forPrintMatrice()){
+//            System.out.println(ligne);
+//        }
     }
 
     public static Boolean[][] copy(Boolean[][] src) {

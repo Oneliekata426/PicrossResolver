@@ -1,0 +1,7 @@
+2x2
+#Colonne:
+2
+1
+#Ligne:
+1
+2
